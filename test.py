@@ -7,7 +7,6 @@ import os, argparse
 import cv2
 from models.BAImodel import BAINet
 from data import test_dataset
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--testsize', type=int, default=352, help='testing size')
 parser.add_argument('--gpu_id', type=str, default='0', help='select gpu id')
