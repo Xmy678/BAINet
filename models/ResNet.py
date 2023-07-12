@@ -98,15 +98,12 @@ class ResNet50(nn.Module):
             raise 
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)#176x176x64---88x88x64
-        self.layer1 = self._make_layer(Bottleneck, 64, 3)#Bottleneck是基础块的类型，64是当前块的输入输入通道数，3是块的数目
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layer1 = self._make_layer(Bottleneck, 64, 3)
         self.layer2 = self._make_layer(Bottleneck, 128, 4, stride=2)
         self.layer3_1 = self._make_layer(Bottleneck, 256, 6, stride=2)
-        self.layer4_1 = self._make_layer(Bottleneck, 512, 3, stride=1)#改动了
-        #总结一下，第一个layer(共3个block，每个block有3层，共9层，均不受stride的影响，即stride=1，故不改变feature map的大小)；
-        # 第二个layer(共4个block，每个block有3层，共12层。第一个block的第2层受stride影响，可能会改变feature map的大小，其余11层均不改变feature map大小)；
-        # 第三个layer(共6个block，每个block有3层，共18层。第一个block的第2层受stride影响，可能会改变feature map的大小，其余17层均不改变feature map大小)…第四个layer和上面类似，不做赘述
-        #第四个layer和上面类似
+        self.layer4_1 = self._make_layer(Bottleneck, 512, 3, stride=1)
+
 
         self.inplanes = 512
 

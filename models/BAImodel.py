@@ -3,8 +3,7 @@ import torch.nn as nn
 import torchvision.models as models
 from ResNet import ResNet50
 from torch.nn import functional as F
-# from .DCM87_1 import DCM_simple, DCM
-# from padding_same_conv import Conv2dd
+
 
 print("load BAImodel")
 
