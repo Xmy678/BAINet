@@ -130,11 +130,7 @@ class BAINet(nn.Module):
         # Backbone model
         self.resnet = ResNet50('rgb')
         self.resnet_depth = ResNet50('rgbd')
-        self.rfb3_1 = GCM(1024, channel)
-        self.rfb4_1 = GCM(2048, channel)
-
-        self.rbf1 = GCM(2048, channel)
-        self.rbf2 = GCM(2048, channel)
+       
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)  # 图片尺寸减半
         self.conv1 = BasicConv2d(1024, 512, 3, padding=1)
@@ -155,8 +151,7 @@ class BAINet(nn.Module):
         self.layer3_channel1 = nn.Conv2d(1024, 1024, 1, bias=True)
         self.layer3_spatial1 = nn.Conv2d(1024, 1, 3, 1, 1, bias=True)
 
-        self.layer4_channel1 = nn.Conv2d(2048, 2048, 1, bias=True)
-        self.layer4_spatial1 = nn.Conv2d(2048, 1, 3, 1, 1, bias=True)
+
 
         self.conv1_channel2 = nn.Conv2d(64, 64, 1, bias=True)
         self.conv1_spatial2 = nn.Conv2d(64, 1, 3, 1, 1, bias=True)
@@ -170,81 +165,9 @@ class BAINet(nn.Module):
         self.layer3_channel2 = nn.Conv2d(1024, 1024, 1, bias=True)
         self.layer3_spatial2 = nn.Conv2d(1024, 1, 3, 1, 1, bias=True)
 
-        self.layer4_channel2 = nn.Conv2d(2048, 2048, 1, bias=True)
-        self.layer4_spatial2 = nn.Conv2d(2048, 1, 3, 1, 1, bias=True)
-
-        self.decoderh = nn.Sequential(
-
-            nn.Dropout(0.5),
-            TransBasicConv2d(512, 512, kernel_size=2, stride=2,
-                             padding=0, dilation=1, bias=False)
-        )
-        self.Sh = nn.Conv2d(512, 1, 3, stride=1, padding=1)
-
-        self.decoder3 = nn.Sequential(
-            BasicConv2d(1024, 512, 3, padding=1),
-            BasicConv2d(512, 512, 3, padding=1),
-            BasicConv2d(512, 256, 3, padding=1),
-            nn.Dropout(0.5),
-            TransBasicConv2d(256, 256, kernel_size=2, stride=2,
-                             padding=0, dilation=1, bias=False)
-        )
-        self.S3 = nn.Conv2d(256, 1, 3, stride=1, padding=1)
-        self.decoder2 = nn.Sequential(
-            BasicConv2d(512, 256, 3, padding=1),
-            BasicConv2d(256, 256, 3, padding=1),
-            BasicConv2d(256, 128, 3, padding=1),
-            BasicConv2d(128, 64, 3, padding=1),
-            #             BasicConv2d(128, 64, 3, padding=1),
-            nn.Dropout(0.5),
-            TransBasicConv2d(64, 64, kernel_size=2, stride=2,
-                             padding=0, dilation=1, bias=False)
-        )
-        self.S2 = nn.Conv2d(64, 1, 3, stride=1, padding=1)
-
-        self.decoder1 = nn.Sequential(
-            BasicConv2d(128, 64, 3, padding=1),
-            BasicConv2d(64, 64, 3, padding=1),
-            BasicConv2d(64, 32, 3, padding=1),
-            nn.Dropout(0.5),
-            TransBasicConv2d(32, 32, kernel_size=2, stride=2,
-                             padding=0, dilation=1, bias=False)
-        )
 
 
-        self.S1 = nn.Conv2d(32, 1, 3, stride=1, padding=1)
-        self.sigmoid = nn.Sigmoid()
-
-        if self.training:
-            self.initialize_weights()
-
-    def bi_attention(self, img_feat, depth_feat, channel_conv1, spatial_conv1, channel_conv2, spatial_conv2):
-
-
-        img_att = self.avg_pool(img_feat)
-        img_att = channel_conv1(img_att)
-        img_att = nn.Softmax(dim=1)(img_att) * img_att.shape[1]
-        depth_att = self.avg_pool(depth_feat)
-        depth_att = channel_conv2(depth_att)
-        depth_att = nn.Softmax(dim=1)(depth_att) * depth_att.shape[1]
-
-        img_att = img_att + img_att * depth_att
-        depth_att = depth_att + img_att * depth_att
-
-        ca_attentioned_img_feat = img_att * img_feat
-        ca_attentioned_depth_feat = depth_att * depth_feat
-
-
-        img_att1 = F.sigmoid(spatial_conv1(ca_attentioned_img_feat))
-        depth_att1 = F.sigmoid(spatial_conv2(ca_attentioned_depth_feat))
-
-        img_att1 = img_att1 + img_att1 * depth_att1
-        depth_att1 = depth_att1 + img_att1 * depth_att1
-
-        img_att1 = ca_attentioned_img_feat * img_att1
-        depth_att1 = ca_attentioned_depth_feat * depth_att1
-
-        return img_att1, depth_att1
+     
 
     def forward(self, x, x_depth):
         x = self.resnet.conv1(x)
